@@ -1,13 +1,13 @@
 
 import { ErrorServer } from "@/utils/helpers/error.helper";
-import { Request, RequestHandler, Response } from "express";
+import { RequestHandler } from "express";
 import puppeteer from "puppeteer";
-import fs from 'fs';
 
 import { spawn } from 'child_process';
 import path from "path";
 import { readFromDatabase, writeToDatabase } from "@/utils/db/db";
 import { escape } from "querystring";
+import { streamVideo } from "../../helpers";
 
 /* 
 ? TODO 
@@ -113,33 +113,3 @@ const commandWgetDoods = (videoUrl: string, title: string) => {
     videoUrl
   ];
 };
-
-export const streamVideo = (req: Request, res: Response) => async (videoPath: string) => {
-  const stat = fs.statSync(videoPath);
-  const fileSize = stat.size;
-
-  const range = req.headers.range;
-  if (range) {
-    const parts = range.replace(/bytes=/, "").split("-");
-    const start = parseInt(parts[0], 10);
-    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-    const chunksize = (end - start) + 1;
-    const file = fs.createReadStream(videoPath, { start, end });
-    const head = {
-      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-      'Accept-Ranges': 'bytes',
-      'Content-Length': chunksize,
-      'Content-Type': 'video/mp4',
-    };
-    res.writeHead(206, head);
-    file.pipe(res);
-
-  } else {
-    const head = {
-      'Content-Length': fileSize,
-      'Content-Type': 'video/mp4',
-    };
-    res.writeHead(200, head);
-    fs.createReadStream(videoPath).pipe(res);
-  }
-}

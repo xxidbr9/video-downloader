@@ -2,9 +2,9 @@ import path from "path";
 import { RequestHandler } from "express";
 import puppeteer, { HTTPRequest } from "puppeteer";
 import { spawn } from "child_process";
-import { streamVideo } from "./doods";
 import { readFromDatabase, writeToDatabase } from "@/utils/db/db";
 import { escape } from "querystring";
+import { streamVideo } from "../../helpers";
 
 export const tiktokHandler: RequestHandler = async (req, res) => {
   try {
